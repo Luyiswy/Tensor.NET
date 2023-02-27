@@ -28,6 +28,26 @@ TC interelem_div(TA a, TB b) {
   return static_cast<TC>(a / b);
 }
 
+template <typename TA, typename TB, typename TC>
+TC interelem_mod(TA a, TB b) {
+  return static_cast<TC>(a % b);
+}
+
+template <typename TA, typename TB, typename TC>
+TC interelem_and(TA a, TB b) {
+  return static_cast<TC>(a & b);
+}
+
+template <typename TA, typename TB, typename TC>
+TC interelem_or(TA a, TB b) {
+  return static_cast<TC>(a | b);
+}
+
+template <typename TA, typename TB, typename TC>
+TC interelem_xor(TA a, TB b) {
+  return static_cast<TC>(a ^ b);
+}
+
 IMPL_NAIVE_DOUBLE_INPUT_INTERNAL(interelem) {
   nn_size idx_offset = loup.ndim - NN_MAX_NDIM;
   std::function<TC(TA, TB)> func;
@@ -43,6 +63,82 @@ IMPL_NAIVE_DOUBLE_INPUT_INTERNAL(interelem) {
       break;
     case Param::Div:
       func = interelem_div<TA, TB, TC>;
+      break;
+    case Param::Mod:
+      if (la.dtype.enumv() == DTypeEnum::Float32 ||
+          la.dtype.enumv() == DTypeEnum::Float64 ||
+          lb.dtype.enumv() == DTypeEnum::Float32 ||
+          lb.dtype.enumv() == DTypeEnum::Float64) {
+        return Status(StatusCategory::NUMNET, StatusCode::MISMATCHED_DTYPE,
+                      "The mod operator only accepts int or long as input");
+      }
+      if (loup.dtype.enumv() == DTypeEnum::Int32) {
+        func = interelem_mod<nn_int32, nn_int32, nn_int32>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Int64) {
+        func = interelem_mod<nn_int64, nn_int64, nn_int64>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Bool) {
+        func = interelem_mod<bool, bool, bool>;
+      } else {
+        return Status(StatusCategory::SYSTEM, StatusCode::FAIL,
+                      "Unexpected exception in interelem.cpp.");
+      }
+      break;
+    case Param::And:
+      if (la.dtype.enumv() == DTypeEnum::Float32 ||
+          la.dtype.enumv() == DTypeEnum::Float64 ||
+          lb.dtype.enumv() == DTypeEnum::Float32 ||
+          lb.dtype.enumv() == DTypeEnum::Float64) {
+        return Status(StatusCategory::NUMNET, StatusCode::MISMATCHED_DTYPE,
+                      "The and operator only accepts int or long as input");
+      }
+      if (loup.dtype.enumv() == DTypeEnum::Int32) {
+        func = interelem_and<nn_int32, nn_int32, nn_int32>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Int64) {
+        func = interelem_and<nn_int64, nn_int64, nn_int64>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Bool) {
+        func = interelem_and<bool, bool, bool>;
+      } else {
+        return Status(StatusCategory::SYSTEM, StatusCode::FAIL,
+                      "Unexpected exception in interelem.cpp.");
+      }
+      break;
+    case Param::Or:
+      if (la.dtype.enumv() == DTypeEnum::Float32 ||
+          la.dtype.enumv() == DTypeEnum::Float64 ||
+          lb.dtype.enumv() == DTypeEnum::Float32 ||
+          lb.dtype.enumv() == DTypeEnum::Float64) {
+        return Status(StatusCategory::NUMNET, StatusCode::MISMATCHED_DTYPE,
+                      "The or operator only accepts int or long as input");
+      }
+      if (loup.dtype.enumv() == DTypeEnum::Int32) {
+        func = interelem_or<nn_int32, nn_int32, nn_int32>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Int64) {
+        func = interelem_or<nn_int64, nn_int64, nn_int64>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Bool) {
+        func = interelem_or<bool, bool, bool>;
+      } else {
+        return Status(StatusCategory::SYSTEM, StatusCode::FAIL,
+                      "Unexpected exception in interelem.cpp.");
+      }
+      break;
+    case Param::Xor:
+      if (la.dtype.enumv() == DTypeEnum::Float32 ||
+          la.dtype.enumv() == DTypeEnum::Float64 ||
+          lb.dtype.enumv() == DTypeEnum::Float32 ||
+          lb.dtype.enumv() == DTypeEnum::Float64) {
+        return Status(StatusCategory::NUMNET, StatusCode::MISMATCHED_DTYPE,
+                      "The xor operator only accepts int or long as input");
+      }
+      if (loup.dtype.enumv() == DTypeEnum::Int32) {
+        func = interelem_xor<nn_int32, nn_int32, nn_int32>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Int64) {
+        func = interelem_xor<nn_int64, nn_int64, nn_int64>;
+      } else if (loup.dtype.enumv() == DTypeEnum::Bool) {
+        func = interelem_xor<bool, bool, bool>;
+      } else {
+        return Status(StatusCategory::SYSTEM, StatusCode::FAIL,
+                      "Unexpected exception in interelem.cpp.");
+      }
       break;
 
     default:

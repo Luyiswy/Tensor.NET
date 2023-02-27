@@ -1,6 +1,6 @@
 
 namespace Tensornet.Common{
-    public static class InplaceOperation{
+    internal static class InplaceOperation{
         public static void Execute<T>(Tensor<T> inp, Func<T, T> operation) 
             where T : struct, IEquatable<T>, IConvertible{
             int idxOffset = inp.TLayout.NDim - TensorLayout.MAX_NDIM;
@@ -76,6 +76,19 @@ namespace Tensornet.Common{
                     }
                 }
             }
+        }
+    }
+}
+
+namespace Tensornet{
+    public partial class Tensor<T>{
+        /// <summary>
+        /// Apply an function on each element of the current tensor inplace.
+        /// Note that the modification will be made on the current tensor directly.
+        /// </summary>
+        /// <param name="operation"></param>
+        public void ForEachInplace(Func<T, T> operation){
+            Common.InplaceOperation.Execute(this, operation);
         }
     }
 }
